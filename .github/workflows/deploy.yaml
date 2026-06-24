@@ -21,7 +21,7 @@ env:
   AWS_ACCOUNT_ID: "683213329249"
   ROLE_TO_ASSUME: "GitHub_identity_provider"
   NODE_VERSION: "22"
-  S3_BUCKET: "hrms-website-vrpi "
+  S3_BUCKET: "hrms-website-vrpi"
   CLOUDFRONT_DISTRIBUTION_ID: "EH914YPBL3WQK"
 
 jobs:
@@ -62,14 +62,8 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Install caniuse-lite package
-        run: npm install caniuse-lite --legacy-peer-deps
-
       - name: Install missing fonts (typeface-poppins)
         run: npm install --legacy-peer-deps typeface-poppins
-
-      - name: Update Browserslist DB
-        run: npx update-browserslist-db@latest --legacy-peer-deps
 
       - name: Build React app
         env:
