@@ -254,7 +254,7 @@ export default function Login() {
         <div className="sunset-glass-right">
           <div className="sunset-right-welcome">
             <h2 className="welcome-title">
-              {isSuperAdminPortal ? 'Super Admin Portal' : currentSubdomain ? `${currentSubdomain.toUpperCase()} Portal` : 'Sign In'}
+              Sign In
             </h2>
           </div>
 
