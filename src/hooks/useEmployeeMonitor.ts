@@ -14,6 +14,10 @@ export function useEmployeeMonitor() {
   const intervalRef = useRef<any>(null)
   const clockStatusRef = useRef<any>(null)
   const isRequestingRef = useRef<boolean>(false)
+  const cleanupListenersRef = useRef<(() => void) | null>(null)
+  const usingSystemDetectorRef = useRef<boolean>(false)
+  const systemDetectorRef = useRef<any>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Start monitoring: Capture mouse activity and hook screenshare
   const startMonitoring = async () => {
@@ -45,12 +49,47 @@ export function useEmployeeMonitor() {
       mouseMovesRef.current = 0
       idleSecondsRef.current = 0
 
-      // Mouse movements event tracker
+      // Activity events tracker (tracks mouse, keyboard, clicks etc.)
+      const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click']
       const trackActivity = () => {
         mouseMovesRef.current += 1
         idleSecondsRef.current = 0 // Reset idle seconds count
-      };
-      window.addEventListener('mousemove', trackActivity)
+      }
+      activityEvents.forEach(e => window.addEventListener(e, trackActivity, { passive: true }))
+      cleanupListenersRef.current = () => {
+        activityEvents.forEach(e => window.removeEventListener(e, trackActivity))
+      }
+
+      usingSystemDetectorRef.current = false
+      systemDetectorRef.current = null
+      abortControllerRef.current = new AbortController()
+
+      const setupIdleDetector = async () => {
+        if ('IdleDetector' in window) {
+          try {
+            const status = await navigator.permissions.query({ name: 'idle-detection' as any })
+            if (status.state === 'granted') {
+              const detector = new (window as any).IdleDetector()
+              detector.addEventListener('change', () => {
+                if (detector.userState === 'active') {
+                  idleSecondsRef.current = 0
+                }
+              })
+              await detector.start({
+                threshold: 60000,
+                signal: abortControllerRef.current!.signal,
+              })
+              systemDetectorRef.current = detector
+              usingSystemDetectorRef.current = true
+              console.log('[MONITOR IDLE] System-wide IdleDetector started successfully.')
+            }
+          } catch (err) {
+            console.warn('[MONITOR IDLE] Failed to query or start system-wide IdleDetector:', err)
+          }
+        }
+      }
+
+      await setupIdleDetector()
 
       // Capture initial screenshot immediately (within 1 second) to provide instant feedback
       setTimeout(async () => {
@@ -74,6 +113,17 @@ export function useEmployeeMonitor() {
       // Snapshot interval: every 30 seconds for near real-time monitoring
       const CAPTURE_INTERVAL = 30
       const monitoringInterval = setInterval(async () => {
+        // If we are using system detector, check if the system-wide state is active
+        if (usingSystemDetectorRef.current && systemDetectorRef.current && systemDetectorRef.current.userState === 'active') {
+          idleSecondsRef.current = 0
+        }
+
+        // Fallback behavior: if system detector is not active, reset activity when window is hidden/blurred
+        // (Assume user is active in another desktop application)
+        if (!usingSystemDetectorRef.current && (document.visibilityState === 'hidden' || !document.hasFocus())) {
+          idleSecondsRef.current = 0
+        }
+
         // Increment idle counter
         idleSecondsRef.current += CAPTURE_INTERVAL
 
@@ -106,11 +156,6 @@ export function useEmployeeMonitor() {
       }, CAPTURE_INTERVAL * 1000) // Every 30 seconds
 
       intervalRef.current = monitoringInterval
-
-      // Cleanup listener refs
-      return () => {
-        window.removeEventListener('mousemove', trackActivity)
-      }
     } catch (err: any) {
       isRequestingRef.current = false // Release permission request lock on error
       console.error('Screen share permissions rejected:', err)
@@ -129,6 +174,18 @@ export function useEmployeeMonitor() {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop())
       mediaStreamRef.current = null
     }
+    if (cleanupListenersRef.current) {
+      cleanupListenersRef.current()
+      cleanupListenersRef.current = null
+    }
+    if (abortControllerRef.current) {
+      try {
+        abortControllerRef.current.abort()
+      } catch (e) {}
+      abortControllerRef.current = null
+    }
+    usingSystemDetectorRef.current = false
+    systemDetectorRef.current = null
     setIsMonitoring(false)
   }
 

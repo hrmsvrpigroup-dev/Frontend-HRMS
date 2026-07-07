@@ -30,6 +30,7 @@ export const attendanceApi = {
   getTodayStatus: () => api.get<{ success: boolean; data: AttendanceItem | null }>('/attendance/today'),
   logIdle: () => api.post<{ success: boolean; data: { idleMinutes: number } }>('/attendance/idle'),
   reset: (id: string) => api.delete<{ success: boolean }>(`/attendance/${id}/reset`),
+  continueShift: (id: string) => api.post<{ success: boolean }>(`/attendance/${id}/continue`),
   // Mobile QR attendance
   createMobileQrSession: () => api.post<{ success: boolean; data: { sessionId: string; qrCode: string; expiresAt: string; mobileUrl: string } }>('/attendance/mobile-qr/create'),
   getMobileQrStatus: (sessionId: string) => api.get<{ success: boolean; data: { status: string; accessToken?: string; refreshToken?: string } }>(`/attendance/mobile-qr/status/${sessionId}`),

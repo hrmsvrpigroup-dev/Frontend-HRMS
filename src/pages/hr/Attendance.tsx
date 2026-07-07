@@ -231,6 +231,18 @@ export default function Attendance() {
     }
   }
 
+  const handleContinue = async (id: string) => {
+    if (!window.confirm('Are you sure you want this employee to continue their shift? This will clear their clock-out record.')) return
+    try {
+      setLoading(true)
+      await attendanceApi.continueShift(id)
+      await fetchLogs()
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to resume shift')
+      setLoading(false)
+    }
+  }
+
   useEffect(() => { fetchLogs() }, [])
 
   useEffect(() => {
@@ -364,7 +376,8 @@ export default function Attendance() {
                 <th style={{ color: '#10b981' }}>Active Hours</th>
                 <th>Idle Time</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th className="no-print">Continue</th>
+                <th className="no-print">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -437,7 +450,21 @@ export default function Attendance() {
                         {log.status || 'ABSENT'}
                       </span>
                     </td>
-                    <td>
+                    <td className="no-print">
+                      {log.clockOut ? (
+                        <button 
+                          onClick={() => handleContinue(log.id)}
+                          className="btn-secondary" 
+                          style={{ padding: '4px 8px', fontSize: '0.75rem', color: '#10b981', borderColor: '#10b981', background: 'transparent' }}
+                          title="Continue Shift"
+                        >
+                          Continue
+                        </button>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>—</span>
+                      )}
+                    </td>
+                    <td className="no-print">
                       <button 
                         onClick={() => handleReset(log.id)}
                         className="btn-secondary" 
@@ -452,7 +479,7 @@ export default function Attendance() {
               })}
               {filteredLogs.length === 0 && (
                 <tr>
-                  <td colSpan={11} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem' }}>
+                  <td colSpan={12} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem' }}>
                     No matching shift attendance records logged.
                   </td>
                 </tr>

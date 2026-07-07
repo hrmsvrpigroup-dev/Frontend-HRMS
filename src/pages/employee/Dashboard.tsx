@@ -128,6 +128,7 @@ export default function Dashboard() {
   const [selectedBulletin, setSelectedBulletin] = useState<any | null>(null)
   const [showAllBulletins, setShowAllBulletins] = useState(false)
   const [footerModal, setFooterModal] = useState<'PRIVACY' | 'TERMS' | 'SUPPORT' | null>(null)
+  const [showClockOutWarning, setShowClockOutWarning] = useState(false)
 
   // Facial & QR attendance modal states
   const [showFaceModal, setShowFaceModal] = useState(false)
@@ -193,6 +194,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchTodayStatus()
+
+    // Poll for status updates silently in the background every 10 seconds.
+    // This allows real-time updates if HR resumes/continues the shift.
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await attendanceApi.getTodayStatus()
+        setTodayStatus(res.data.data)
+      } catch {
+        // ignore background errors
+      }
+    }, 10000)
+
+    return () => clearInterval(pollInterval)
   }, [])
 
   // ── Idle Detection Engine ──────────────────────────────────────────────────
@@ -251,6 +265,11 @@ export default function Dashboard() {
 
     // Tick every second
     idleTimerRef.current = setInterval(() => {
+      // If using system detector, check if the system-wide state is active
+      if (usingSystemDetector && detector && detector.userState === 'active') {
+        resetActivity()
+      }
+
       // Fallback behavior: if system detector is not active, reset activity when window is hidden/blurred
       if (!usingSystemDetector && (document.visibilityState === 'hidden' || !document.hasFocus())) {
         resetActivity()
@@ -504,6 +523,11 @@ export default function Dashboard() {
   }
 
   const handleClockOut = async () => {
+    setShowClockOutWarning(true)
+  }
+
+  const confirmClockOut = async () => {
+    setShowClockOutWarning(false)
     // Stop idle tracking when clocking out
     if (idleTimerRef.current) clearInterval(idleTimerRef.current)
     setShowIdleAlert(false)
@@ -897,6 +921,137 @@ export default function Dashboard() {
             </div>
             <div className="modal-footer">
               <button className="btn-primary" onClick={() => setShowBreakTips(false)}>Understood</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════ CLOCK OUT WARNING MODAL ════════ */}
+      {showClockOutWarning && (
+        <div className="modal-backdrop" style={{
+          background: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(8px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            padding: '2.5rem 2rem 2rem 2rem',
+            maxWidth: '480px',
+            width: '90%',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            textAlign: 'center',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1.5rem'
+          }}>
+            {/* Warning Icon Badge */}
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: '#fef2f2',
+              border: '2px solid #fee2e2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ef4444',
+            }}>
+              <ShieldAlert size={36} />
+            </div>
+
+            <div>
+              <h2 style={{
+                color: '#0f172a',
+                fontSize: '1.4rem',
+                fontWeight: 800,
+                margin: '0 0 0.5rem 0',
+              }}>
+                Confirm Clock Out?
+              </h2>
+              <p style={{
+                color: '#64748b',
+                fontSize: '0.92rem',
+                lineHeight: 1.5,
+                margin: 0,
+              }}>
+                Are you sure you want to end your shift? Once you clock out, you will not be able to clock back in today without HR/Admin approval.
+              </p>
+            </div>
+
+            {/* Warning details banner */}
+            <div style={{
+              background: '#fef3c7',
+              border: '1px solid #fde68a',
+              borderRadius: '12px',
+              padding: '0.8rem 1rem',
+              fontSize: '0.82rem',
+              color: '#92400e',
+              textAlign: 'left',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.6rem',
+              lineHeight: 1.4,
+            }}>
+              <Info size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <span>
+                <strong>Note:</strong> If you accidentally clicked clock out, please click <strong>Cancel</strong> below to keep your shift active.
+              </span>
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
+              <button
+                onClick={() => setShowClockOutWarning(false)}
+                style={{
+                  flex: 1,
+                  padding: '0.8rem',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  background: 'white',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s',
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = '#f8fafc')}
+                onMouseOut={(e) => (e.currentTarget.style.background = 'white')}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmClockOut}
+                disabled={clocking}
+                style={{
+                  flex: 1,
+                  padding: '0.8rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: '#ef4444',
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)',
+                  transition: 'background 0.2s',
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = '#dc2626')}
+                onMouseOut={(e) => (e.currentTarget.style.background = '#ef4444')}
+              >
+                {clocking ? 'CLOCKING OUT...' : 'Yes, Clock Out'}
+              </button>
             </div>
           </div>
         </div>
