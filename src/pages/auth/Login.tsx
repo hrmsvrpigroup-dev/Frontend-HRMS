@@ -333,7 +333,7 @@ export default function Login() {
 
                 {!isSuperAdminPortal && currentSubdomain === '' && (
                   <div className="sunset-signup-prompt">
-                    Creat A New Account? <a onClick={() => setAuthMode('register')}>Sign Up</a>
+                    Create A New Account? <a onClick={() => setAuthMode('register')}>Sign Up</a>
                   </div>
                 )}
               </form>

@@ -118,10 +118,10 @@ export default function AddEmployee() {
     }
   }
 
-  const renderInput = ({ label, type = 'text', name, required = false, fullWidth = false }: any) => (
+  const renderInput = ({ label, type = 'text', name, required = false, fullWidth = false, placeholder = '' }: any) => (
     <div className={`onboard-field ${fullWidth ? 'full-width' : ''}`} key={name}>
       <label>{label} {required && <span>*</span>}</label>
-      <input required={required} type={type} name={name} value={formData[name as keyof typeof formData]} onChange={handleChange} />
+      <input required={required} type={type} name={name} placeholder={placeholder} value={formData[name as keyof typeof formData] || ''} onChange={handleChange} />
     </div>
   )
 

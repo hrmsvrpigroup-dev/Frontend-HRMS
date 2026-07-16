@@ -142,6 +142,7 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState<FormState>(() => createFormState(null))
   const [files, setFiles] = useState<FileState>(() => createFileState())
+  const [draftLoaded, setDraftLoaded] = useState(false)
   const [submittedInvite, setSubmittedInvite] = useState<OnboardingInvite | null>(null)
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
@@ -164,6 +165,7 @@ export default function OnboardingPage() {
       try {
         setLoading(true)
         setSubmittedInvite(null)
+        setDraftLoaded(false)
         
         const response = await onboardingApi.getInviteByToken(token)
         setInvite(response)
@@ -190,6 +192,7 @@ export default function OnboardingPage() {
 
         setFiles(createFileState())
         setError('')
+        setDraftLoaded(true)
       } catch (err: any) {
         setError(err.response?.data?.message || 'Unable to load onboarding link.')
       } finally {
@@ -201,16 +204,16 @@ export default function OnboardingPage() {
   }, [token])
 
   useEffect(() => {
-    if (token) {
+    if (token && draftLoaded) {
       localStorage.setItem(`onboard_candidate_step_${token}`, currentStep.toString())
     }
-  }, [currentStep, token])
+  }, [currentStep, token, draftLoaded])
 
   useEffect(() => {
-    if (token) {
+    if (token && draftLoaded) {
       localStorage.setItem(`onboard_candidate_form_${token}`, JSON.stringify(formData))
     }
-  }, [formData, token])
+  }, [formData, token, draftLoaded])
 
   const clearCandidateDraft = () => {
     if (token) {

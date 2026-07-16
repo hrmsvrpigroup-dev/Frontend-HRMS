@@ -400,11 +400,21 @@
 
 @media (max-width: 960px) {
   .sunset-glass-container {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     max-width: 500px;
+    width: 90%;
+    min-height: auto;
+    margin: 2rem auto;
   }
   .sunset-glass-left {
     display: none;
+  }
+  .sunset-glass-right {
+    position: relative;
+    width: 100%;
+    padding: 3rem 2rem;
+    left: 0 !important;
+    right: 0 !important;
   }
   .sunset-navbar {
     display: none; /* Hide navbar on mobile for simplicity */
