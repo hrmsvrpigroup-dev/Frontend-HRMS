@@ -9,6 +9,7 @@ export default function HRLayout() {
         { to: '/hr/employees', label: 'Employees' },
         { to: '/hr/shifts', label: 'Shift Management' },
         { to: '/hr/attendance', label: 'Attendance' },
+        { to: '/hr/manual-attendance', label: 'Manual Attendance' },
         { to: '/hr/calendar', label: 'Calendar' },
         { to: '/hr/leaves', label: 'Leave Approvals' },
         { to: '/hr/recruitment', label: 'Recruitment' },

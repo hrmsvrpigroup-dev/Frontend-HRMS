@@ -34,6 +34,7 @@ import EditEmployee from './pages/hr/EditEmployee'
 import EmployeeVerifications from './pages/hr/EmployeeVerifications'
 import HRCalendar from './pages/hr/Calendar'
 import HRAttendanceDetails from './pages/hr/AttendanceDetails'
+import ManualAttendance from './pages/hr/ManualAttendance'
 import HREmployeePortfolio from './pages/hr/EmployeePortfolio'
 import OnboardingPage from './pages/onboarding/OnboardingPage'
 import HRVerificationPanel from './pages/onboarding/HRVerificationPanel'
@@ -156,6 +157,7 @@ export default function App() {
             <Route path="/hr/verifications" element={<EmployeeVerifications />} />
             <Route path="/hr/onboarding" element={<HRVerificationPanel />} />
             <Route path="/hr/attendance" element={<Attendance />} />
+            <Route path="/hr/manual-attendance" element={<ManualAttendance />} />
             <Route path="/hr/calendar" element={<HRCalendar />} />
             <Route path="/hr/attendance/details" element={<HRAttendanceDetails />} />
             <Route path="/hr/employees/:id/portfolio" element={<HREmployeePortfolio />} />

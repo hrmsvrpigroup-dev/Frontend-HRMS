@@ -7,7 +7,7 @@ const INITIAL_FORM_DATA = {
   employeeCode: '',
   firstName: '', lastName: '', gender: 'Male', dateOfBirth: '', mobileNumber: '', personalEmail: '', workEmail: '', maritalStatus: 'Single',
   departmentId: '', designationId: '', employmentType: 'FULL_TIME', employmentStatus: 'ACTIVE', branchId: '', shift: 'General Shift', reportingManagerId: '', joiningDate: '',
-  salaryStructure: '', basicSalary: '', paymentType: 'Bank Transfer', bankName: '', accountNumber: '', ifscCode: '', panNumber: '', uanNumber: '', pfEnabled: 'false', esiEnabled: 'false',
+  salaryStructure: '', basicSalary: '', monthlySalary: '', pfAmount: '', paymentType: 'Bank Transfer', bankName: '', accountNumber: '', ifscCode: '', panNumber: '', uanNumber: '', pfEnabled: 'false', esiEnabled: 'false',
   attendanceType: 'FACIAL', geoFencingEnabled: 'false', twoFactorEnabled: 'false',
   sendActivationEmail: 'true',
   country: '', state: '', city: '', addressLine1: '', addressLine2: '', postalCode: '',
@@ -290,6 +290,8 @@ export default function AddEmployee() {
                       </div>
                       <div className="form-grid">
                         {renderInput({ label: "Basic Salary (Annual ₹)", name: "basicSalary", type: "number" })}
+                        {renderInput({ label: "Monthly Salary (₹)", name: "monthlySalary", type: "number" })}
+                        {renderInput({ label: "PF Amount (₹)", name: "pfAmount", type: "number" })}
                         {renderSelect({ label: "Payment Method", name: "paymentType", options: ['Bank Transfer', 'Cash', 'Cheque'] })}
                         {renderInput({ label: "Bank Name", name: "bankName" })}
                         {renderInput({ label: "Account Number", name: "accountNumber" })}

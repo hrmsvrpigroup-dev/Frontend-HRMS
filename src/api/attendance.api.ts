@@ -26,6 +26,7 @@ export type AttendanceItem = {
 export const attendanceApi = {
   list: () => api.get<{ success: boolean; data: AttendanceItem[] }>('/attendance'),
   clockIn: (data?: { faceImage?: string; qrData?: string; clockInPhoto?: string }) => api.post<{ success: boolean; data: AttendanceItem }>('/attendance/clock-in', data),
+  manualClockIn: (employeeId: string) => api.post<{ success: boolean; data: AttendanceItem }>('/attendance/manual-clock-in', { employeeId }),
   clockOut: () => api.post<{ success: boolean; data: AttendanceItem }>('/attendance/clock-out'),
   getTodayStatus: () => api.get<{ success: boolean; data: AttendanceItem | null }>('/attendance/today'),
   logIdle: () => api.post<{ success: boolean; data: { idleMinutes: number } }>('/attendance/idle'),
